@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f5f1">
+  <meta name="description" content="AtelierFlow — цифровая система управления швейным ателье. Архитектура, надежность, бюджет и экономика проекта.">
+  <title>AtelierFlow — отчет по проекту</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f6f5f1;
+      --surface: #fffefa;
+      --ink: #202520;
+      --muted: #72786f;
+      --line: #e5e5dc;
+      --green: #285d46;
+      --green-dark: #193c2e;
+      --lime: #d4e690;
+      --orange: #e9825b;
+      --shadow: 0 18px 56px rgb(30 42 32 / 8%);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 92px; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+    .wrap { width: min(1160px, calc(100% - 48px)); margin-inline: auto; }
+
+    .topbar {
+      position: sticky;
+      z-index: 10;
+      top: 0;
+      border-bottom: 1px solid rgb(32 37 32 / 8%);
+      background: rgb(246 245 241 / 91%);
+      backdrop-filter: blur(16px);
+    }
+    .nav {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+    }
+    .brand { display: inline-flex; align-items: center; gap: 11px; font-weight: 750; letter-spacing: -.04em; }
+    .brand-mark {
+      width: 35px; height: 35px; display: grid; place-items: center;
+      border-radius: 12px; color: white; background: var(--green); font-size: 18px;
+    }
+    .brand-name { font-size: 18px; }
+    .brand-name span { color: var(--green); }
+    .nav-links { display: flex; align-items: center; gap: 25px; color: #626960; font-size: 13px; }
+    .nav-links a:hover, .nav-links a:focus-visible { color: var(--green); }
+    .nav-cta {
+      padding: 11px 16px; color: white; background: var(--green); border-radius: 999px;
+      font-size: 13px; font-weight: 650; transition: background .2s, transform .2s;
+    }
+    .nav-cta:hover { background: var(--green-dark); transform: translateY(-1px); }
+    .menu-toggle { display: none; border: 0; background: transparent; color: var(--ink); font-size: 24px; }
+
+    .hero { padding: 72px 0 66px; }
+    .hero-grid { display: grid; grid-template-columns: 1.06fr .94fr; align-items: center; gap: 52px; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 9px; color: var(--green);
+      text-transform: uppercase; letter-spacing: .13em; font-size: 11px; font-weight: 750;
+    }
+    .eyebrow::before { content: ""; width: 7px; height: 7px; background: var(--orange); border-radius: 50%; }
+    h1 { max-width: 640px; margin: 20px 0 18px; font-size: clamp(44px, 6vw, 76px); line-height: .99; letter-spacing: -.07em; font-weight: 650; }
+    h1 em { color: var(--green); font-style: normal; }
+    .hero-copy { max-width: 560px; color: #656c63; font-size: 17px; line-height: 1.7; }
+    .hero-actions { margin-top: 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+    .button {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      border: 1px solid var(--green); border-radius: 999px; padding: 13px 19px;
+      color: white; background: var(--green); font-weight: 650; font-size: 14px;
+      transition: transform .2s, background .2s;
+    }
+    .button:hover { background: var(--green-dark); transform: translateY(-2px); }
+    .button.secondary { color: var(--green); background: transparent; }
+    .button.secondary:hover { background: #e9ede5; }
+    .button .arrow { font-size: 18px; line-height: 12px; }
+    .hero-meta { margin-top: 31px; display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; }
+    .avatars { display: flex; }
+    .avatar { width: 29px; height: 29px; margin-left: -6px; display: grid; place-items: center; border: 2px solid var(--paper); border-radius: 50%; color: white; background: #a9785c; font-size: 10px; font-weight: 700; }
+    .avatar:first-child { margin-left: 0; background: var(--green); }
+
+    .preview {
+      position: relative; overflow: hidden; min-height: 410px; padding: 28px;
+      border-radius: 30px; color: white; background: var(--green-dark);
+      box-shadow: var(--shadow);
+    }
+    .preview::before, .preview::after { content: ""; position: absolute; border: 1px solid rgb(255 255 255 / 10%); border-radius: 50%; pointer-events: none; }
+    .preview::before { width: 430px; height: 430px; right: -178px; top: -170px; }
+    .preview::after { width: 320px; height: 320px; right: -123px; top: -115px; }
+    .preview-top { position: relative; display: flex; align-items: center; justify-content: space-between; color: #cfdbd0; font-size: 12px; }
+    .live { display: inline-flex; align-items: center; gap: 7px; padding: 6px 9px; border: 1px solid rgb(255 255 255 / 16%); border-radius: 999px; font-size: 10px; }
+    .live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #bce58c; box-shadow: 0 0 0 4px rgb(188 229 140 / 12%); }
+    .preview h2 { position: relative; margin: 34px 0 5px; font-size: 25px; font-weight: 550; letter-spacing: -.04em; }
+    .preview-sub { position: relative; color: #a9b9ad; font-size: 12px; }
+    .stat-row { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 25px 0 14px; }
+    .stat {
+      padding: 15px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 15px;
+      background: rgb(255 255 255 / 5%);
+    }
+    .stat small { display: block; color: #a9b9ad; font-size: 10px; }
+    .stat strong { display: block; margin-top: 4px; font-size: 25px; font-weight: 580; letter-spacing: -.05em; }
+    .stat strong span { color: var(--lime); font-size: 12px; letter-spacing: 0; }
+    .board {
+      position: relative; padding: 15px; border-radius: 15px; background: #f8f8f2; color: var(--ink);
+    }
+    .board-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 13px; font-size: 11px; font-weight: 700; }
+    .board-head span:last-child { color: var(--muted); font-weight: 500; }
+    .board-line { height: 1px; background: #e8e9e2; }
+    .order-row { display: grid; grid-template-columns: 1.5fr 1fr auto; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid #edeee8; font-size: 10px; }
+    .order-row:last-child { padding-bottom: 0; border: 0; }
+    .order-name { font-weight: 650; }
+    .order-name small { display: block; color: var(--muted); font-size: 9px; font-weight: 450; }
+    .pill { padding: 4px 7px; border-radius: 999px; background: #edf1df; color: #566a2c; font-size: 9px; white-space: nowrap; }
+    .pill.orange { color: #9a5c38; background: #f8e9dc; }
+    .order-price { font-weight: 700; }
+
+    .trust-strip { padding: 25px 0; border-block: 1px solid var(--line); }
+    .trust-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .trust-label { color: var(--muted); font-size: 12px; }
+    .trust-items { display: flex; flex-wrap: wrap; gap: 12px; }
+    .trust-chip { padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; color: #555e55; background: var(--surface); font-size: 11px; font-weight: 600; }
+
+    section.content-section { padding: 94px 0; }
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 30px; margin-bottom: 34px; }
+    .section-kicker { color: var(--green); text-transform: uppercase; letter-spacing: .13em; font-size: 10px; font-weight: 750; }
+    h2.section-title { max-width: 640px; margin: 9px 0 0; font-size: clamp(32px, 4.5vw, 51px); line-height: 1.04; letter-spacing: -.06em; font-weight: 620; }
+    .section-desc { max-width: 340px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 17px; }
+    .info-card { min-height: 235px; padding: 27px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+    .info-card.dark { color: white; border-color: var(--green-dark); background: var(--green-dark); }
+    .card-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; color: var(--green); background: #eaf0e4; font-size: 18px; }
+    .dark .card-icon { color: var(--lime); background: rgb(255 255 255 / 9%); }
+    .info-card h3 { margin: 21px 0 8px; font-size: 20px; letter-spacing: -.035em; }
+    .info-card p { max-width: 480px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .info-card.dark p { color: #bfcbc2; }
+    .stack-tags { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 7px; }
+    .stack-tags span { padding: 6px 9px; border: 1px solid var(--line); border-radius: 8px; color: #515951; font-size: 10px; font-weight: 600; }
+    .dark .stack-tags span { border-color: rgb(255 255 255 / 17%); color: #e1e9de; }
+
+    .scope-section { background: #eeeee8; }
+    .scope-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .scope-card { padding: 29px; border-radius: var(--radius); background: var(--surface); }
+    .scope-card.excluded { background: #f9eee7; }
+    .scope-label { display: flex; align-items: center; gap: 10px; margin-bottom: 19px; font-size: 17px; font-weight: 700; }
+    .scope-mark { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; color: var(--green); background: #e9efe4; font-size: 15px; }
+    .excluded .scope-mark { color: #ad6547; background: #f2d8c9; }
+    .check-list { margin: 0; padding: 0; list-style: none; }
+    .check-list li { display: flex; gap: 11px; padding: 10px 0; border-top: 1px solid #eeeee8; color: #5e665e; font-size: 13px; }
+    .check-list li::before { content: "↗"; color: var(--green); font-weight: 750; }
+    .excluded .check-list li::before { content: "×"; color: #b66c4b; font-size: 17px; line-height: 18px; }
+    .acceptance { margin-top: 18px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 20px; padding: 20px 24px; border: 1px solid #d8dfd3; border-radius: 16px; background: #e8eee5; }
+    .acceptance-number { color: var(--green); font-size: 35px; line-height: 1; letter-spacing: -.06em; font-weight: 650; }
+    .acceptance h3 { margin: 0 0 3px; font-size: 14px; }
+    .acceptance p { margin: 0; color: #667065; font-size: 12px; }
+    .acceptance-label { padding: 8px 11px; border: 1px solid #cad5c6; border-radius: 999px; color: var(--green); font-size: 10px; font-weight: 700; white-space: nowrap; }
+
+    .sla-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .sla-card { padding: 24px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+    .sla-number { color: #9aa197; font-size: 11px; font-weight: 750; }
+    .sla-card h3 { min-height: 48px; margin: 13px 0 20px; font-size: 17px; line-height: 1.4; letter-spacing: -.025em; }
+    .sla-measures { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .measure { padding: 13px; border-radius: 12px; background: #f1f2ec; }
+    .measure small { display: block; color: var(--muted); font-size: 10px; }
+    .measure strong { display: block; margin-top: 3px; color: var(--green); font-size: 24px; letter-spacing: -.05em; }
+    .measure.slo strong { color: #76912d; }
+    .sla-note { margin: 15px 0 0; color: var(--muted); font-size: 11px; }
+    .policy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+    .policy-card { padding: 22px 24px; border-radius: 17px; background: #edf0e9; }
+    .policy-card h3 { margin: 0 0 7px; font-size: 14px; }
+    .policy-card p { margin: 0; color: #667064; font-size: 12px; line-height: 1.7; }
+    .credit-table { width: 100%; margin-top: 12px; border-collapse: collapse; font-size: 11px; }
+    .credit-table th, .credit-table td { padding: 8px 0; border-top: 1px solid #dce2d8; text-align: left; }
+    .credit-table th { color: #697168; font-weight: 500; }
+    .credit-table td:last-child, .credit-table th:last-child { text-align: right; font-weight: 700; }
+    .policy-footnote { margin-top: 11px !important; font-size: 10px !important; }
+
+    .budget-section { color: white; background: var(--green-dark); }
+    .budget-section .section-kicker { color: var(--lime); }
+    .budget-section .section-desc { color: #b5c2b7; }
+    .budget-section .section-title { color: white; }
+    .budget-layout { display: grid; grid-template-columns: 1.12fr .88fr; gap: 20px; align-items: stretch; }
+    .budget-table-wrap { padding: 10px 25px; border: 1px solid rgb(255 255 255 / 13%); border-radius: var(--radius); background: rgb(255 255 255 / 4%); }
+    .budget-table { width: 100%; border-collapse: collapse; }
+    .budget-table td { padding: 15px 0; border-bottom: 1px solid rgb(255 255 255 / 11%); color: #d1dad2; font-size: 13px; }
+    .budget-table tr:last-child td { border-bottom: 0; }
+    .budget-table td:last-child { text-align: right; color: white; font-weight: 650; white-space: nowrap; }
+    .budget-table .total td { padding-top: 20px; color: var(--lime); font-size: 17px; font-weight: 750; }
+    .budget-side { display: flex; flex-direction: column; justify-content: space-between; padding: 28px; border-radius: var(--radius); color: var(--ink); background: var(--lime); }
+    .budget-side small { color: #5f6d43; font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: .1em; }
+    .budget-total { margin: 10px 0 0; font-size: clamp(37px, 5vw, 58px); line-height: 1; letter-spacing: -.07em; font-weight: 700; }
+    .budget-side p { max-width: 300px; margin: 17px 0 0; color: #586345; font-size: 12px; line-height: 1.7; }
+    .budget-foot { margin-top: 20px; padding-top: 15px; border-top: 1px solid rgb(32 37 32 / 17%); color: #65704d; font-size: 10px; }
+    .equation { margin-top: 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 9px; color: #c5d3c7; font-size: 12px; }
+    .equation span { padding: 8px 11px; border: 1px solid rgb(255 255 255 / 13%); border-radius: 9px; }
+    .equation strong { color: var(--lime); }
+
+    .economics-section { background: #eeeee8; }
+    .economics-grid { display: grid; grid-template-columns: .95fr 1.05fr; gap: 19px; }
+    .economics-card { padding: 28px; border-radius: var(--radius); background: var(--surface); }
+    .economics-card h3 { margin: 0; font-size: 18px; letter-spacing: -.03em; }
+    .economics-card > p { margin: 7px 0 22px; color: var(--muted); font-size: 12px; }
+    .input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .input-box { padding: 12px; border: 1px solid var(--line); border-radius: 12px; }
+    .input-box label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 9px; }
+    .input-box strong { font-size: 14px; }
+    .formula { margin-top: 16px; padding: 14px; border-radius: 12px; color: #5c6859; background: #eff2e9; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; line-height: 1.8; }
+    .formula strong { color: var(--green); }
+    .chart-card { display: flex; flex-direction: column; }
+    .chart-metrics { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .chart-metrics div { font-size: 10px; color: var(--muted); }
+    .chart-metrics strong { display: block; color: var(--ink); font-size: 15px; }
+    .chart { width: 100%; height: 190px; overflow: visible; }
+    .chart-caption { display: flex; justify-content: space-between; margin-top: -3px; color: var(--muted); font-size: 9px; }
+    .chart-legend { display: flex; gap: 17px; margin-top: 13px; color: #636b62; font-size: 10px; }
+    .legend-dot { display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: 50%; background: var(--green); }
+    .legend-dot.cost { background: var(--orange); }
+
+    .hosting-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .host-card { position: relative; display: flex; flex-direction: column; min-height: 344px; padding: 24px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+    .host-card.recommended { border: 2px solid var(--green); box-shadow: 0 15px 35px rgb(40 93 70 / 10%); }
+    .recommended-badge { position: absolute; top: 16px; right: 15px; padding: 6px 8px; border-radius: 999px; color: var(--green); background: #eaf0e4; font-size: 9px; font-weight: 750; }
+    .host-number { color: #92998f; font-size: 10px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+    .host-card h3 { margin: 15px 0 6px; font-size: 18px; letter-spacing: -.035em; }
+    .host-card .host-sub { margin: 0; color: var(--muted); font-size: 11px; }
+    .host-cost { margin: 22px 0 3px; font-size: 34px; letter-spacing: -.06em; font-weight: 650; }
+    .host-period { color: var(--muted); font-size: 10px; }
+    .host-divider { height: 1px; margin: 19px 0 13px; background: var(--line); }
+    .host-points { margin: 0; padding: 0; list-style: none; }
+    .host-points li { display: flex; gap: 8px; margin: 8px 0; color: #636b62; font-size: 11px; }
+    .host-points li::before { content: "✓"; color: var(--green); font-weight: 800; }
+    .host-card:not(.recommended) .host-points li::before { content: "·"; color: #92998f; }
+    .verdict { margin-top: 20px; padding: 18px 21px; border-radius: 15px; color: #e2eae2; background: var(--green-dark); font-size: 12px; line-height: 1.7; }
+    .verdict strong { color: var(--lime); }
+    .fine-print { margin-top: 11px; color: var(--muted); font-size: 10px; line-height: 1.6; }
+
+    .closing { padding: 66px 0 88px; }
+    .closing-card {
+      display: flex; align-items: center; justify-content: space-between; gap: 25px;
+      padding: 39px 43px; border-radius: 26px; color: white; background: var(--green);
+    }
+    .closing-card h2 { max-width: 570px; margin: 0; font-size: clamp(27px, 4vw, 43px); letter-spacing: -.055em; line-height: 1.1; }
+    .closing-card p { margin: 10px 0 0; color: #cbd7ce; font-size: 13px; }
+    .closing-card .button { flex-shrink: 0; color: var(--green-dark); border-color: var(--lime); background: var(--lime); }
+    .closing-card .button:hover { background: #e0efad; }
+    footer { padding: 25px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+    .footer-inner { display: flex; justify-content: space-between; gap: 18px; }
+
+    @media (max-width: 900px) {
+      .nav-links { gap: 13px; font-size: 11px; }
+      .hero-grid { gap: 28px; }
+      .sla-grid { grid-template-columns: 1fr; }
+      .sla-card h3 { min-height: 0; margin-bottom: 14px; }
+      .hosting-grid { grid-template-columns: 1fr; }
+      .host-card { min-height: unset; }
+      .host-points { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+    }
+    @media (max-width: 680px) {
+      .wrap { width: min(100% - 32px, 520px); }
+      .nav { min-height: 66px; }
+      .nav-links {
+        position: absolute; display: none; top: 65px; left: 0; right: 0; padding: 14px 22px 18px;
+        border-bottom: 1px solid var(--line); background: var(--paper); flex-direction: column; align-items: stretch; gap: 0;
+      }
+      .nav-links.open { display: flex; }
+      .nav-links a { padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+      .nav-links a:last-child { border-bottom: 0; }
+      .nav-cta { display: none; }
+      .menu-toggle { display: block; }
+      .hero { padding: 49px 0 42px; }
+      .hero-grid { grid-template-columns: 1fr; gap: 37px; }
+      h1 { font-size: 54px; }
+      .hero-copy { font-size: 15px; }
+      .preview { min-height: unset; padding: 22px; border-radius: 23px; }
+      .preview h2 { margin-top: 27px; }
+      .trust-inner { align-items: flex-start; flex-direction: column; }
+      .trust-items { gap: 7px; }
+      section.content-section { padding: 67px 0; }
+      .section-head { display: block; margin-bottom: 25px; }
+      .section-desc { margin-top: 13px; }
+      .about-grid, .scope-grid, .policy-grid, .budget-layout, .economics-grid { grid-template-columns: 1fr; }
+      .info-card { min-height: 0; padding: 23px; }
+      .scope-card { padding: 23px; }
+      .acceptance { grid-template-columns: auto 1fr; gap: 13px; padding: 17px; }
+      .acceptance-label { grid-column: 2; justify-self: start; }
+      .budget-table-wrap { padding-inline: 17px; }
+      .budget-table td { font-size: 11px; }
+      .budget-side { min-height: 215px; }
+      .input-row { gap: 6px; }
+      .input-box { padding: 10px 8px; }
+      .input-box strong { font-size: 12px; }
+      .closing { padding: 49px 0 58px; }
+      .closing-card { align-items: flex-start; flex-direction: column; padding: 29px 24px; }
+      .footer-inner { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav wrap" aria-label="Основная навигация">
+      <a class="brand" href="#top" aria-label="AtelierFlow — на главную">
+        <span class="brand-mark">A</span>
+        <span class="brand-name">atelier<span>flow</span></span>
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="#product">О проекте</a>
+        <a href="#scope">Объем работ</a>
+        <a href="#reliability">Надежность</a>
+        <a href="#budget">Бюджет</a>
+        <a href="#hosting">Инфраструктура</a>
+      </div>
+      <a class="nav-cta" href="#hosting">Смотреть решение <span aria-hidden="true">↗</span></a>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Открыть меню" aria-expanded="false">☰</button>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="eyebrow">Цифровое ателье нового поколения</div>
+          <h1>Меньше рутины.<br><em>Больше мастерства.</em></h1>
+          <p class="hero-copy">AtelierFlow объединяет заказы, клиентов, мастеров и склад в одном понятном пространстве. Чтобы каждый заказ двигался вперед — от первой примерки до готового изделия.</p>
+          <div class="hero-actions">
+            <a class="button" href="#product">Знакомство с проектом <span class="arrow" aria-hidden="true">↗</span></a>
+            <a class="button secondary" href="#budget">Экономика проекта</a>
+          </div>
+          <div class="hero-meta">
+            <div class="avatars" aria-hidden="true"><span class="avatar">AF</span><span class="avatar">2</span></div>
+            <span>Команда из 2 специалистов · Казахстан</span>
+          </div>
+        </div>
+
+        <div class="preview" aria-label="Предварительный вид панели AtelierFlow">
+          <div class="preview-top"><span>ATELIERFLOW / WORKSPACE</span><span class="live">Система активна</span></div>
+          <h2>Доброе утро, команда</h2>
+          <div class="preview-sub">Понедельник, рабочая смена в разгаре</div>
+          <div class="stat-row">
+            <div class="stat"><small>Заказы в работе</small><strong>24 <span>+3 сегодня</span></strong></div>
+            <div class="stat"><small>Готовы к выдаче</small><strong>08 <span>на этой неделе</span></strong></div>
+          </div>
+          <div class="board">
+            <div class="board-head"><span>Последние заказы</span><span>Открыть все →</span></div>
+            <div class="order-row">
+              <span class="order-name">Платье «Алия»<small>Заказ #1048 · сегодня</small></span>
+              <span class="pill">В работе</span><span class="order-price">38 000 ₸</span>
+            </div>
+            <div class="order-row">
+              <span class="order-name">Пиджак, ремонт<small>Заказ #1047 · вчера</small></span>
+              <span class="pill orange">Примерка</span><span class="order-price">12 500 ₸</span>
+            </div>
+            <div class="order-row">
+              <span class="order-name">Костюм по меркам<small>Заказ #1046 · вчера</small></span>
+              <span class="pill">Раскрой</span><span class="order-price">64 000 ₸</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="trust-strip">
+      <div class="wrap trust-inner">
+        <span class="trust-label">Технологии и инфраструктура проекта</span>
+        <div class="trust-items"><span class="trust-chip">FastAPI</span><span class="trust-chip">PostgreSQL</span><span class="trust-chip">Docker</span><span class="trust-chip">PS.kz · Казахстан</span><span class="trust-chip">34 задачи MVP</span></div>
+      </div>
+    </div>
+
+    <section class="content-section" id="product">
+      <div class="wrap">
+        <div class="section-head">
+          <div><div class="section-kicker">01 / Продукт и архитектура</div><h2 class="section-title">Ателье работает.<br>Система помогает.</h2></div>
+          <p class="section-desc">Легкий цифровой инструмент для ежедневной работы — без сложного внедрения и дорогой корпоративной инфраструктуры.</p>
+        </div>
+        <div class="about-grid">
+          <article class="info-card">
+            <div class="card-icon" aria-hidden="true">✳</div>
+            <h3>Весь процесс заказа — в одном месте</h3>
+            <p>Карточка клиента, параметры изделия, этапы производства и расход материалов связаны с заказом. Команда видит актуальную картину и не теряет детали в переписках.</p>
+          </article>
+          <article class="info-card dark">
+            <div class="card-icon" aria-hidden="true">⌘</div>
+            <h3>Простой и управляемый стек</h3>
+            <p>API на FastAPI, данные в PostgreSQL, Docker-развертывание на VPS в PS.kz. Исходный код и история работ хранятся в репозитории GitHub.</p>
+            <div class="stack-tags"><span>FastAPI</span><span>PostgreSQL</span><span>Docker</span><span>GitHub</span></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section scope-section" id="scope">
+      <div class="wrap">
+        <div class="section-head">
+          <div><div class="section-kicker">02 / Statement of Work</div><h2 class="section-title">Сначала договоримся,<br>что входит в работу.</h2></div>
+          <p class="section-desc">Прозрачный объем, понятная приемка и согласованные правила на случай, если планы изменятся.</p>
+        </div>
+        <div class="scope-grid">
+          <article class="scope-card">
+            <div class="scope-label"><span class="scope-mark">✓</span>Входит в MVP</div>
+            <ul class="check-list">
+              <li>34 согласованные задачи MVP в GitHub</li>
+              <li>Приложение в Docker на PS.kz</li>
+              <li>Работа с клиентами, заказами, статусами и складом</li>
+              <li>Исходный код, базовая документация и передача проекта</li>
+              <li>Поддержка по Retainer после запуска</li>
+            </ul>
+          </article>
+          <article class="scope-card excluded">
+            <div class="scope-label"><span class="scope-mark">×</span>Не входит в MVP</div>
+            <ul class="check-list">
+              <li>Интеграция с 1С и другими учетными системами</li>
+              <li>Онлайн-оплата и платежные шлюзы</li>
+              <li>Функции за пределами согласованных 34 задач</li>
+              <li>Дополнительные работы без согласования Change Request</li>
+            </ul>
+          </article>
+        </div>
+        <div class="acceptance">
+          <div class="acceptance-number">03</div>
+          <div><h3>Дня на проверку результата</h3><p>Айбол принимает работу или присылает список конкретных замечаний. Без ответа за 3 календарных дня результат считается принятым.</p></div>
+          <span class="acceptance-label">Молчаливая приемка</span>
+        </div>
+        <div class="policy-grid">
+          <article class="policy-card">
+            <h3>Модель договора</h3>
+            <p><strong>Capped T&amp;M</strong> на разработку: оплата фактических работ с потолком <strong>680 000 ₸</strong>. Поддержка — <strong>Retainer 60 000 ₸/мес.</strong> Новые функции согласуются отдельно.</p>
+          </article>
+          <article class="policy-card">
+            <h3>Изменения и завершение</h3>
+            <p>Изменения оцениваются по влиянию на объем, сроки и стоимость и начинаются после согласования. При расторжении заказчик получает исходный код, документацию, <strong>pg_dump</strong> и выгрузки данных в <strong>CSV</strong>.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" id="reliability">
+      <div class="wrap">
+        <div class="section-head">
+          <div><div class="section-kicker">03 / Надежность сервиса</div><h2 class="section-title">Обещания, которые<br>можно измерить.</h2></div>
+          <p class="section-desc">SLO задает целевой уровень качества, SLA — минимальное обязательство перед ателье.</p>
+        </div>
+        <div class="sla-grid">
+          <article class="sla-card">
+            <div class="sla-number">СЦЕНАРИЙ 01</div>
+            <h3>Оформление клиента на ресепшене</h3>
+            <div class="sla-measures">
+              <div class="measure slo"><small>Цель SLO</small><strong>99,5%</strong></div>
+              <div class="measure"><small>Гарантия SLA</small><strong>99,0%</strong></div>
+            </div>
+            <p class="sla-note">Бюджет ошибки SLO: до 216 минут недоступности за 30-дневный месяц.</p>
+          </article>
+          <article class="sla-card">
+            <div class="sla-number">СЦЕНАРИЙ 02</div>
+            <h3>Смена статуса на Канбан-доске</h3>
+            <div class="sla-measures">
+              <div class="measure slo"><small>SLO быстрее 400 мс</small><strong>95,0%</strong></div>
+              <div class="measure"><small>SLA быстрее 400 мс</small><strong>90,0%</strong></div>
+            </div>
+            <p class="sla-note">Цель — завершать не менее 95% операций смены статуса быстрее 400 мс.</p>
+          </article>
+          <article class="sla-card">
+            <div class="sla-number">СЦЕНАРИЙ 03</div>
+            <h3>Списание ткани со склада</h3>
+            <div class="sla-measures">
+              <div class="measure slo"><small>Успешность SLO</small><strong>99,0%</strong></div>
+              <div class="measure"><small>Успешность SLA</small><strong>98,0%</strong></div>
+            </div>
+            <p class="sla-note">В журнале учитываются успешные операции; сбои приложения считаются ошибками.</p>
+          </article>
+        </div>
+        <div class="policy-grid">
+          <article class="policy-card">
+            <h3>Как расходуем Error Budget</h3>
+            <p>Показатели сверяются ежемесячно. При исчерпании бюджета команда приостанавливает необязательные релизы и переключается на стабилизацию, поиск причин и предотвращение повторных инцидентов.</p>
+          </article>
+          <article class="policy-card">
+            <h3>Сервисные кредиты при нарушении SLA</h3>
+            <table class="credit-table" aria-label="Сервисные кредиты за нарушение SLA">
+              <tbody>
+                <tr><th>Нарушен SLA по одному сценарию</th><td>3 000 ₸</td></tr>
+                <tr><th>Нарушен SLA по двум сценариям</th><td>6 000 ₸</td></tr>
+                <tr><th>Нарушен SLA по трем сценариям</th><td>9 000 ₸</td></tr>
+                <tr><th>Потолок кредита за месяц</th><td>12 000 ₸</td></tr>
+              </tbody>
+            </table>
+            <p class="policy-footnote">Кредит засчитывается в следующий платеж Retainer; условия и исключения закрепляются в договоре.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section budget-section" id="budget">
+      <div class="wrap">
+        <div class="section-head">
+          <div><div class="section-kicker">04 / Бюджет и FinOps</div><h2 class="section-title">У каждого тенге<br>есть назначение.</h2></div>
+          <p class="section-desc">Бюджет проекта (BAC) на 12 месяцев. В статью поддержки заложено 9 месяцев Retainer.</p>
+        </div>
+        <div class="budget-layout">
+          <div class="budget-table-wrap">
+            <table class="budget-table" aria-label="Бюджет проекта на 12 месяцев">
+              <tbody>
+                <tr><td>Разработка · Capped T&amp;M</td><td>680 000 ₸</td></tr>
+                <tr><td>Планшет в цех</td><td>80 000 ₸</td></tr>
+                <tr><td>Риск-резерв · EMV</td><td>113 000 ₸</td></tr>
+                <tr><td>Хостинг PS.kz</td><td>120 000 ₸</td></tr>
+                <tr><td>Поддержка · 60 000 ₸ × 9 месяцев</td><td>540 000 ₸</td></tr>
+                <tr class="total"><td>Итого BAC</td><td>1 533 000 ₸</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <aside class="budget-side">
+            <div><small>Бюджет проекта / 12 месяцев</small><div class="budget-total">1,533,000 ₸</div><p>Фиксируем верхнюю границу затрат и сохраняем резерв на известные проектные риски.</p></div>
+            <div class="budget-foot">BAC = 680 000 + 80 000 + 113 000 + 120 000 + 540 000 ₸</div>
+          </aside>
+        </div>
+        <div class="equation" aria-label="Расчет суммы бюджета">
+          <span>Разработка</span> + <span>Оборудование</span> + <span>EMV</span> + <span>Хостинг</span> + <span>Поддержка</span> = <strong>1 533 000 ₸</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section economics-section" id="economics">
+      <div class="wrap">
+        <div class="section-head">
+          <div><div class="section-kicker">05 / Юнит-экономика</div><h2 class="section-title">Безубыточность —<br>на 20-м мастере.</h2></div>
+          <p class="section-desc">При заданных постоянных и переменных затратах тариф покрывает расходы ровно с двадцатого пользователя.</p>
+        </div>
+        <div class="economics-grid">
+          <article class="economics-card">
+            <h3>Экономика на одного пользователя</h3>
+            <p>Месячная модель, в тенге</p>
+            <div class="input-row">
+              <div class="input-box"><label>Постоянные затраты FC</label><strong>70 000 ₸</strong></div>
+              <div class="input-box"><label>Переменные VC / мастер</label><strong>500 ₸</strong></div>
+              <div class="input-box"><label>Тариф / мастер</label><strong>4 000 ₸</strong></div>
+            </div>
+            <div class="formula">
+              Маржа = P − VC = 4 000 − 500 = <strong>3 500 ₸</strong><br>
+              BEP = FC / (P − VC) = 70 000 / 3 500 = <strong>20 пользователей</strong>
+            </div>
+          </article>
+          <article class="economics-card chart-card">
+            <h3>Точка схождения</h3>
+            <p>Выручка и общие затраты равны при 20 пользователях</p>
+            <div class="chart-metrics">
+              <div>Выручка при 20 мастерах<strong>80 000 ₸/мес.</strong></div>
+              <div>Общие затраты<strong>80 000 ₸/мес.</strong></div>
+              <div>Результат<strong>0 ₸</strong></div>
+            </div>
+            <svg class="chart" viewBox="0 0 420 190" role="img" aria-label="График точки безубыточности: выручка и затраты пересекаются при 20 пользователях">
+              <line x1="42" y1="18" x2="42" y2="158" stroke="#e6e8e0"/>
+              <line x1="42" y1="158" x2="402" y2="158" stroke="#e6e8e0"/>
+              <line x1="42" y1="112" x2="402" y2="112" stroke="#eff0ea" stroke-dasharray="3 5"/>
+              <line x1="42" y1="65" x2="402" y2="65" stroke="#eff0ea" stroke-dasharray="3 5"/>
+              <text x="6" y="161" fill="#8a9187" font-size="9">0</text>
+              <text x="0" y="115" fill="#8a9187" font-size="9">40k</text>
+              <text x="0" y="68" fill="#8a9187" font-size="9">80k</text>
+              <text x="39" y="176" fill="#8a9187" font-size="9">0</text>
+              <text x="203" y="176" fill="#8a9187" font-size="9">20</text>
+              <text x="377" y="176" fill="#8a9187" font-size="9">40 мастеров</text>
+              <line x1="223" y1="18" x2="223" y2="158" stroke="#9fb66a" stroke-dasharray="4 4"/>
+              <path d="M42 158 L402 18" fill="none" stroke="#285d46" stroke-width="3" stroke-linecap="round"/>
+              <path d="M42 133.5 L402 18" fill="none" stroke="#e9825b" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="223" cy="88" r="6" fill="#fffefa" stroke="#285d46" stroke-width="3"/>
+              <rect x="235" y="68" width="89" height="25" rx="7" fill="#eaf0e4"/>
+              <text x="246" y="84" fill="#285d46" font-size="10" font-weight="700">20 пользователей</text>
+            </svg>
+            <div class="chart-caption"><span>тыс. ₸ / месяц</span><span>количество пользователей</span></div>
+            <div class="chart-legend"><span><i class="legend-dot"></i>Выручка</span><span><i class="legend-dot cost"></i>Общие затраты</span></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" id="hosting">
+      <div class="wrap">
+        <div class="section-head">
+          <div><div class="section-kicker">06 / TCO за 36 месяцев</div><h2 class="section-title">Подходящая инфраструктура<br>для реального масштаба.</h2></div>
+          <p class="section-desc">Сравнили три сценария по совокупной стоимости владения за три года.</p>
+        </div>
+        <div class="hosting-grid">
+          <article class="host-card">
+            <div class="host-number">Вариант 01</div>
+            <h3>Публичное облако</h3>
+            <p class="host-sub">PaaS / Cloud</p>
+            <div class="host-cost">1 512 000 ₸</div>
+            <div class="host-period">≈ 42 000 ₸ в месяц · 36 месяцев</div>
+            <div class="host-divider"></div>
+            <ul class="host-points"><li>Простое масштабирование</li><li>Низкий порог старта</li><li>Самая высокая оценка TCO</li><li>Риск зависимости от поставщика</li></ul>
+          </article>
+          <article class="host-card">
+            <div class="host-number">Вариант 02</div>
+            <h3>Сервер в офисе</h3>
+            <p class="host-sub">On-Premise с ИБП</p>
+            <div class="host-cost">1 090 000 ₸</div>
+            <div class="host-period">≈ 30 300 ₸ в месяц в среднем · 36 месяцев</div>
+            <div class="host-divider"></div>
+            <ul class="host-points"><li>Оборудование остается у ателье</li><li>Нужны ИБП, электричество и интернет</li><li>Обслуживание на стороне команды</li><li>Ремонт и обновление — риск владельца</li></ul>
+          </article>
+          <article class="host-card recommended">
+            <span class="recommended-badge">Рекомендуем</span>
+            <div class="host-number">Вариант 03</div>
+            <h3>Открытый стек на VPS</h3>
+            <p class="host-sub">ЦОД PS.kz · Казахстан</p>
+            <div class="host-cost">360 000 ₸</div>
+            <div class="host-period">≈ 10 000 ₸ в месяц · 36 месяцев</div>
+            <div class="host-divider"></div>
+            <ul class="host-points"><li>Наименьший TCO из трех вариантов</li><li>Данные размещены в Казахстане</li><li>Открытый стек без вендор-локина</li><li>Не нужно обслуживать сервер в офисе</li></ul>
+          </article>
+        </div>
+        <div class="verdict"><strong>Вывод:</strong> для AtelierFlow оптимален VPS в ЦОД PS.kz. Это самый доступный из трех сценариев по оценке TCO, размещает данные в Казахстане и оставляет систему переносимой благодаря открытому стеку. Соблюдение требований законодательства РК о персональных данных также зависит от настроек доступа, хранения и обработки данных.</div>
+        <p class="fine-print">TCO — ориентировочная оценка за 36 месяцев по заданным исходным данным. Фактическая стоимость зависит от тарифов, конфигурации, поддержки и условий эксплуатации.</p>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="wrap">
+        <div class="closing-card">
+          <div><h2>Мастерская, где каждому заказу есть место.</h2><p>AtelierFlow превращает ежедневную работу в понятный процесс.</p></div>
+          <a class="button" href="#top">К началу страницы <span class="arrow" aria-hidden="true">↑</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-inner"><span>© 2026 AtelierFlow · Проект автоматизации швейного ателье</span><span>FastAPI · PostgreSQL · Docker · Казахстан</span></div>
+  </footer>
+  <script>
+    const menuToggle = document.getElementById("menuToggle");
+    const navLinks = document.getElementById("navLinks");
+
+    menuToggle.addEventListener("click", () => {
+      const isOpen = navLinks.classList.toggle("open");
+      menuToggle.setAttribute("aria-expanded", String(isOpen));
+      menuToggle.setAttribute("aria-label", isOpen ? "Закрыть меню" : "Открыть меню");
+      menuToggle.textContent = isOpen ? "×" : "☰";
+    });
+
+    navLinks.addEventListener("click", (event) => {
+      if (event.target instanceof HTMLAnchorElement) {
+        navLinks.classList.remove("open");
+        menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "Открыть меню");
+        menuToggle.textContent = "☰";
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+[
+  { "id": "AF-1048", "client": "Анна Смирнова", "item": "Костюм-двойка", "price": 85000, "status": "sewing", "dueDate": "12 ноя" },
+  { "id": "AF-1049", "client": "Марат Алиев", "item": "Пальто из кашемира", "price": 120000, "status": "cutting", "dueDate": "14 ноя" },
+  { "id": "AF-1050", "client": "Елена Волкова", "item": "Платье на заказ", "price": 64000, "status": "new", "dueDate": "18 ноя" },
+  { "id": "AF-1051", "client": "Данияр Ким", "item": "Рубашка, 2 шт.", "price": 48000, "status": "ready", "dueDate": "10 ноя" },
+  { "id": "AF-1052", "client": "София Нур", "item": "Брюки классические", "price": 39000, "status": "issued", "dueDate": "08 ноя" },
+  { "id": "AF-1053", "client": "Ирина Белова", "item": "Жакет из твида", "price": 72000, "status": "sewing", "dueDate": "16 ноя" },
+  { "id": "AF-1054", "client": "Руслан Омаров", "item": "Пиджак", "price": 95000, "status": "cutting", "dueDate": "20 ноя" }
+]
