@@ -1,0 +1,52 @@
+name: AtelierFlow CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    # Указываем папку, в которую ты залил проект Next.js
+    defaults:
+      run:
+        working-directory: ./ITProjects
+
+    steps:
+    - name: Получение кода (Checkout)
+      uses: actions/checkout@v4
+
+    - name: Настройка Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: './ITProjects/package-lock.json'
+
+    - name: Установка зависимостей
+      run: npm install
+
+    - name: Линтер (Проверка стиля кода)
+      run: npm run lint
+
+    - name: Тесты (Заглушка для ЛЗ)
+      run: echo "Здесь будут запускаться тесты (npm test)"
+
+    - name: Сборка артефакта (Build)
+      run: npm run build
+
+    - name: Проверка зависимостей на уязвимости (Trivy)
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: './ITProjects'
+        format: 'table'
+        severity: 'CRITICAL,HIGH'
+
+    - name: Публикация артефакта
+      uses: actions/upload-artifact@v4
+      with:
+        name: nextjs-build-artifact
+        path: ./ITProjects/.next/
