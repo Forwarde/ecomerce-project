@@ -1,0 +1,59 @@
+name: k6 Load Testing
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  k6-load-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ./ITProjects/package-lock.json
+
+      - name: Install dependencies & build Next.js app
+        working-directory: ./ITProjects
+        run: |
+          npm install
+          npm run build
+
+      - name: Start Next.js application in background
+        working-directory: ./ITProjects
+        run: |
+          nohup npm run start > /tmp/nextjs.log 2>&1 &
+          echo "Waiting for Next.js server on http://localhost:3000..."
+          for i in $(seq 1 30); do
+            if curl -sSf http://localhost:3000 > /dev/null; then
+              echo "Next.js server is up!"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run k6 Load Test
+        run: |
+          k6 run k6/load-test.js --summary-export=k6-summary.json
+          echo "## 🚀 k6 Load Test Completed" >> $GITHUB_STEP_SUMMARY
+          echo "Target: \`http://localhost:3000\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload k6 Summary Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-load-test-summary
+          path: k6-summary.json
+          retention-days: 7
