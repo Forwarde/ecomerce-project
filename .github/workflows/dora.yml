@@ -1,0 +1,75 @@
+name: DORA Metrics Report
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    types: [ closed ]
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+  actions: read
+
+jobs:
+  dora-metrics:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate DORA Metrics
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Calculating DORA Metrics for ${{ github.repository }}..."
+
+          # 1. Deployment Frequency (commits/merges to main in the last 30 days)
+          COMMITS_30D=$(git rev-list --count --since="30 days ago" HEAD)
+          DEPLOY_FREQ=$(awk "BEGIN {printf \"%.2f\", $COMMITS_30D / 30}")
+
+          # 2. Lead Time for Changes (average PR merge time or commit interval in hours)
+          PR_LEAD_TIME=$(gh pr list --state merged --limit 20 --json createdAt,mergedAt \
+            --jq 'if length > 0 then ([.[] | ((.mergedAt | fromdateiso8601) - (.createdAt | fromdateiso8601))] | add / length / 3600) else 0 end' 2>/dev/null || echo "0")
+          LEAD_TIME_HOURS=$(awk "BEGIN {printf \"%.2f\", $PR_LEAD_TIME}")
+
+          # 3. Change Failure Rate (ratio of fix/hotfix commits in the last 30 days)
+          FIX_COMMITS_30D=$(git log --since="30 days ago" --grep="^fix" -i --oneline | wc -l)
+          if [ "$COMMITS_30D" -gt 0 ]; then
+            CFR=$(awk "BEGIN {printf \"%.1f\", ($FIX_COMMITS_30D / $COMMITS_30D) * 100}")
+          else
+            CFR="0.0"
+          fi
+
+          # 4. Mean Time to Recovery (MTTR) based on closed bug/fix issues or workflow recovery
+          MTTR_HOURS=$(gh issue list --state closed --limit 20 --json createdAt,closedAt \
+            --jq 'if length > 0 then ([.[] | ((.closedAt | fromdateiso8601) - (.createdAt | fromdateiso8601))] | add / length / 3600) else 0 end' 2>/dev/null || echo "0")
+          MTTR_FMT=$(awk "BEGIN {printf \"%.2f\", $MTTR_HOURS}")
+
+          cat <<EOF > dora-report.md
+          # 📊 Отчет по метрикам DORA (AtelierFlow)
+
+          | Метрика DORA | Значение | Описание |
+          | :--- | :--- | :--- |
+          | **Deployment Frequency (Частота релизов)** | **${COMMITS_30D}** коммитов за 30 дн. (~${DEPLOY_FREQ}/день) | Частота поставки изменений в ветку \`main\` |
+          | **Lead Time for Changes (Время выполнения изменений)** | **${LEAD_TIME_HOURS} ч.** | Среднее время от открытия PR до слияния в \`main\` |
+          | **Change Failure Rate (Доля отказов изменений)** | **${CFR}%** (${FIX_COMMITS_30D} из ${COMMITS_30D}) | Доля коммитов с исправлениями (\`fix\`) от общего числа изменений |
+          | **Mean Time to Recovery / MTTR (Время восстановления)** | **${MTTR_FMT} ч.** | Среднее время закрытия задач/инцидентов |
+          EOF
+
+          cat dora-report.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload DORA Metrics Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dora-metrics-report
+          path: dora-report.md
+          retention-days: 30
