@@ -1,0 +1,16 @@
+Category,Item,Stack_Type,Year_0_CAPEX_KZT,Year_1_OPEX_KZT,Year_2_OPEX_KZT,Year_3_OPEX_KZT,Total_3Yr_KZT,Source_Or_Assumption
+CAPEX,MVP Development (360 hrs x 4000 KZT),OpenSource,1440000,0,0,0,1440000,Assumption: Junior rate 4000 KZT/hr
+CAPEX,Staff Training & Onboarding (12 staff),OpenSource,120000,0,0,0,120000,Assumption: 2 workshops + guides
+OPEX,Cloud VPS Hosting (4 vCPU 8GB RAM + Backups),OpenSource,0,120000,120000,120000,360000,Public tariff PS.kz / Hetzner (10000 KZT/mo)
+OPEX,Software Licenses (Next.js / PostgreSQL / Docker),OpenSource,0,0,0,0,0,100% Free & Open Source software
+OPEX,Maintenance & Support (5 hrs/mo x 4000 KZT),OpenSource,0,200000,200000,200000,600000,Assumption: 50 hrs/yr maintenance
+TOTAL_TCO,AtelierFlow Open Source Stack Total,OpenSource,1560000,320000,320000,320000,2520000,Formula: CAPEX + Sum(OPEX_Y1..Y3)
+BENEFITS,Fabric Waste Reduction (70% saved),OpenSource,0,2688000,2688000,2688000,8064000,Based on 320000 KZT/mo current fabric loss
+BENEFITS,Staff Time Saved (35 hrs/mo saved),OpenSource,0,1512000,1512000,1512000,4536000,Based on master/admin hourly wage
+BENEFITS,Reduced Order Delays & Retained Clients,OpenSource,0,840000,840000,840000,2520000,Retained ~6 orders/mo margin
+TOTAL_BENEFITS,Gross Economic Benefit,OpenSource,0,5040000,5040000,5040000,15120000,Formula: Sum of annual savings
+NET_CASH_FLOW,Annual Net Cash Flow,OpenSource,-1560000,4720000,4720000,4720000,12600000,Formula: Benefits - TCO
+METRICS,ROI_Percent (Base Case),OpenSource,0,0,0,0,500.0,Formula: (15120000 - 2520000) / 2520000 * 100
+METRICS,Sensitivity_Cost_Plus_30_Percent_ROI,OpenSource,0,0,0,0,361.5,Formula: (15120000 - 3276000) / 3276000 * 100
+METRICS,Sensitivity_Benefits_50_Percent_ROI,OpenSource,0,0,0,0,200.0,Formula: (7560000 - 2520000) / 2520000 * 100
+COMPARISON,Proprietary SaaS CRM+ERP (Bitrix24 + MoySklad),Proprietary,1800000,1560000,1560000,1560000,6480000,Public SaaS tariffs 115000 KZT/mo + integrator
