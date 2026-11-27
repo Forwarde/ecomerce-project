@@ -1,0 +1,42 @@
+name: PM Risk Report (Ollama)
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # Каждый понедельник в 09:00 UTC
+  workflow_dispatch:    # Ручной запуск кнопкой
+
+jobs:
+  generate-risk-report:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: read
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install and start Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 5
+          ollama pull qwen2.5:1.5b
+
+      - name: Run PM risk analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          OLLAMA_MODEL: qwen2.5:1.5b
+        run: python3 risk_report.py
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pm-risk-report
+          path: risk_report.md
