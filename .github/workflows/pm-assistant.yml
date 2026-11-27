@@ -1,0 +1,42 @@
+name: PM AI Status Assistant (Weekly)
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/pm_ai_assistant.py'
+      - '.github/workflows/pm-assistant.yml'
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  weekly-pm-status:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run PM Status & Stale-Issue Assistant
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scripts/pm_ai_assistant.py
+          cat pm-weekly-report.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload Weekly PM Status Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pm-weekly-status-report
+          path: pm-weekly-report.md
+          retention-days: 30
