@@ -1,9 +1,16 @@
 name: PM Risk Report (Ollama)
 
 on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'risk_report.py'
+      - '.github/workflows/pm_risk_report.yml'
   schedule:
-    - cron: '0 9 * * 1' # Каждый понедельник в 09:00 UTC
-  workflow_dispatch:    # Ручной запуск кнопкой
+    - cron: '0 9 * * 1'
+
+
+   
 
 jobs:
   generate-risk-report:
