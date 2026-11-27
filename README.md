@@ -1,77 +1,50 @@
 # AtelierFlow — Автоматизированная система учета для швейного ателье
-Лабораторная для универа. 
 
+Сквозной проект по курсу **«Управление ИТ-проектами» (15 недель, 2026/2027)**.
 Система цифровизации учета заказов, индивидуальных мерок клиентов и складских остатков тканей для реального швейного ателье.
 
 ---
 
-## 📌 О проекте
+## 📂 Итоговое портфолио PM-артефактов (Недели 1–15)
 
-Ранее учет в ателье велся вручную на бумаге: мерки клиентов периодически терялись, а закупка тканей производилась вслепую, что приводило к излишкам или нехватке материалов в процессе пошива.
+👉 **Полное оглавление портфолио со всеми 15 обязательными артефактами:** [`docs/PORTFOLIO-INDEX.md`](./docs/PORTFOLIO-INDEX.md)
 
-**Цель проекта:**
-Полная цифровизация базы заказов и склада, сокращение времени на поиск материалов, прозрачный контроль этапов пошива и исключение потери клиентских данных[cite: 5].
-
-* **Заказчик:** Айбол (владелец швейного ателье)[cite: 5].
-* **Команда разработки:** Нурлы (Backend / DevOps, PM) и Нурым (Backend Developer)[cite: 5].
-
----
-
-## 🎯 Границы проекта (Project Scope)
-
-### Что входит (In Scope)[cite: 5]:
-* REST API на **FastAPI (Python)** для управления данными[cite: 5].
-* Реляционная база данных **PostgreSQL**[cite: 5].
-* Модуль ведения карточек клиентов и истории индивидуальных мерок[cite: 5].
-* Учет складских остатков тканей (метраж, состав, цвет) и списание при заказе[cite: 5].
-* Отслеживание статусов выполнения заказов (в обработке, раскрой, примерка, готов)[cite: 5].
-* Контейнеризация и быстрый запуск через **Docker Compose**[cite: 5].
-
-### Что НЕ входит (Out of Scope)[cite: 5]:
-* Мобильное приложение для клиентов (iOS / Android)[cite: 5].
-* Прямая интеграция с кассовыми аппаратами и банковскими терминалами[cite: 5].
-* Онлайн-оплата на сайте[cite: 5].
+| Блок курса | Ключевые артефакты в репозитории |
+| :--- | :--- |
+| **Инициация и экономика (Нед. 1–4)** | [ЛЗ 1: Рынок и кейс](./docs/lab01-market-and-case.md) · [ЛЗ 2: Модели и ADR](./docs/lab02-delivery-models.md) · [ЛЗ 3: Бизнес-кейс, Устав, TCO/ROI](./docs/lab03-business-case-charter.md) ([CSV](./docs/lab03-tco-roi.csv)) · [ЛЗ 4: Story Map и 14 НФТ](./docs/lab04-stakeholders-storymap-nfr.md) |
+| **Планирование, риски, FinOps (Нед. 5–8)** | [ЛЗ 5: WBS, релизы, RACI](./docs/lab05-wbs-releases-raci.md) · [ЛЗ 6: Монте-Карло](./docs/lab06-monte-carlo.md) ([код](./scripts/monte_carlo.py)) · [ЛЗ 7: RAID (20 рисков) и STRIDE](./docs/lab07-raid-stride-compliance.md) · [ЛЗ 8: SoW, SLA/SLO, FinOps](./docs/lab08-sow-sla-budget-finops.md) |
+| **Поставка, DORA, k6 и UAT (Нед. 9–11)** | [ЛЗ 9: Поток и CFD](./docs/lab09-sprints-flow-metrics.md) · [ЛЗ 10: DORA и релизный план](./docs/lab10-dora-release-plan.md) ([код](./scripts/dora_dashboard.py)) · [ЛЗ 11: k6, UAT, Postmortem, Runbook](./docs/lab11-testing-uat-postmortem-runbook.md) |
+| **ИИ, портфель и защита (Нед. 12–15)** | [ЛЗ 12: ИИ-функция и Evals](./docs/lab12-ai-feature-evals-cost.md) ([30 примеров CSV](./docs/lab12-eval-dataset.csv)) · [ЛЗ 13: ИИ-ассистент PM](./docs/lab13-pm-ai-assistant.md) ([код](./scripts/pm_ai_assistant.py)) · [ЛЗ 14: WSJF и Дашборд](./docs/lab14-wsjf-dashboard-status-change.md) ([код](./scripts/executive_dashboard.py)) · [ЛЗ 15: Защита, Уроки, Резюме](./docs/lab15-defense-lessons-resume.md) |
+| **Архитектурные решения (ADR-лог)** | [`ADR-001` (Модель поставки)](./docs/adr/ADR-001-delivery-model.md) · [`ADR-002` (ИИ-парсер заявок)](./docs/adr/ADR-002-ai-feature-decision.md) · [`ADR-003` (Open Source стек и CI/CD)](./docs/adr/ADR-003-hosting-and-cicd.md) |
 
 ---
 
-## 🛠 Технологический стек
+## 🛠️ Реальный технологический стек (100% Open Source)
 
-* **Язык программирования:** Python 3.11+[cite: 5]
-* **Фреймворк:** FastAPI[cite: 5]
-* **База данных:** PostgreSQL[cite: 5]
-* **ORM / Миграции:** SQLAlchemy / Alembic
-* **Контейнеризация:** Docker, Docker Compose[cite: 5]
-* **Контроль версий и трекинг задач:** Git, GitHub Projects[cite: 3, 5]
-
----
-
-## 👥 Команда и распределение ролей в проекте
-
-### Нурым (Forward)
-* **Project Manager (PM):** управление скоупом, расчет экономики, связь со стейкхолдерами и ведение канбан-доски.
-* **DevOps Engineer:** настройка контейнеризации (Docker, Docker Compose), CI/CD пайплайнов и серверной инфраструктуры.
-* **Middle Fullstack Developer:** сквозная интеграция пользовательских сценариев и связка фронтенд-интерфейса с серверной частью.
-* **Backend Developer:** проектирование архитектуры API на FastAPI, реализация бизнес-логики учета заказов и склада.
-* **QA / Тестировщик:** написание тест-кейсов, интеграционное тестирование эндпоинтов, контроль критериев приемки (DoD).
+* **Веб-приложение (`./ITProjects/`):** **Next.js 14 (App Router) + TypeScript + Tailwind CSS** — публичный каталог (`/`), авторизация (`/login`), защищенная панель управления заказами, мерками и тканями (`/admin` через `middleware.ts`).
+* **Контейнеризация и мониторинг SLA:** [`DockerFile`](./DockerFile) + [`docker-compose.yml`](./docker-compose.yml) (приложение на порту `3000` + мониторинг доступности **Uptime Kuma** на порту `3001`).
+* **CI/CD, безопасность и автотесты:**
+  - [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) — ESLint, автотесты (`ITProjects/tests/smoke.test.mjs`), проверка `monte_carlo.py`, сборка Next.js и скан уязвимостей **Trivy**.
+  - [`.github/workflows/k6.yml`](./.github/workflows/k6.yml) — нагрузочное тестирование **Grafana k6** ([`k6/load-test.js`](./k6/load-test.js), порог `p95 < 1000ms`).
+  - [`.github/workflows/dora.yml`](./.github/workflows/dora.yml) — автоматический расчет 4 метрик **DORA**.
+  - [`.github/workflows/pm-assistant.yml`](./.github/workflows/pm-assistant.yml) — еженедельный ИИ-ассистент PM по расписанию (`cron`).
+* **Целевая дорожная карта бэкенда (Release 3.1+):** Выделение REST API на FastAPI + PostgreSQL (зафиксировано в `docs/project-overview.md` и `for_future_tasks`).
 
 ---
 
-### Нурлы (Forwardzhemae)
-* **Data Engineer:** проектирование реляционной схемы данных PostgreSQL, построение пайплайнов обработки и миграции данных.
-* **Junior Data Analyst:** анализ метрик ателье, расчет базовых показателей эффективности и подготовка аналитических отчетов.
-* **AI Engineer:** прототипирование интеллектуальных алгоритмов (прогнозирование расхода тканей, автоподбор параметров).
-* **Design Engineer:** проектирование системных схем, моделирование бизнес-процессов и архитектурных диаграмм решения.
-* **Cybersecurity Specialist:** аудит безопасности API, защита персональных данных клиентов и разграничение прав доступа.
+## 🚀 Быстрый запуск локально
 
-
-
-## 🚀 Быстрый старт (Локальное развертывание)
-
-### Требования
-* Установленный Docker и Docker Compose.
-* Git.
-
-### 1. Клонирование репозитория
+### Вариант 1: Через Docker Compose (с мониторингом Uptime Kuma)
 ```bash
-git clone [https://github.com/Forwarde/ecommerce-project.git](https://github.com/Forwarde/ecommerce-project.git)
-cd ecommerce-project
+docker compose up -d --build
+# Приложение:  http://localhost:3000
+# Uptime Kuma: http://localhost:3001
+```
+
+### Вариант 2: Локально (Node.js 20+)
+```bash
+cd ITProjects
+npm install
+node --test tests/smoke.test.mjs
+npm run dev
+```
