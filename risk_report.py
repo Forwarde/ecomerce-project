@@ -1,7 +1,7 @@
 import json
 import os
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 REPO = os.getenv("GITHUB_REPOSITORY", "Forwarde/ecomerce-project")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
@@ -9,8 +9,9 @@ OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:1.5b")
 
 
-def fetch_open_issues():
-    url = f"https://api.github.com/repos/{REPO}/issues?state=open&per_page=50"
+def fetch_two_sprints_issues():
+    since = (datetime.now(timezone.utc) - timedelta(days=28)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    url = f"https://api.github.com/repos/{REPO}/issues?state=all&since={since}&per_page=100"
     headers = {
         "Accept": "application/vnd.github+json",
         "User-Agent": "PM-Risk-Analyzer",
@@ -23,36 +24,44 @@ def fetch_open_issues():
         items = json.loads(resp.read().decode("utf-8"))
 
     now = datetime.now(timezone.utc)
-    issues = []
+    sprint_1, sprint_2 = [], []
+
     for item in items:
         if "pull_request" in item:
             continue
         created = datetime.fromisoformat(item["created_at"].replace("Z", "+00:00"))
         age_days = (now - created).days
         labels = [lbl["name"] for lbl in item.get("labels", [])]
-        issues.append(
-            f"- #{item['number']}: {item['title']} | "
+        status = "ЗАКРЫТА" if item["state"] == "closed" else "ОТКРЫТА"
+        line = (
+            f"- #{item['number']} [{status}]: {item['title']} | "
             f"Возраст: {age_days} дн. | Метки: {', '.join(labels) if labels else 'нет'} | "
             f"Комментариев: {item['comments']}"
         )
-    return issues
+        if age_days > 14:
+            sprint_1.append(line)
+        else:
+            sprint_2.append(line)
+
+    return sprint_1, sprint_2
 
 
-def analyze_with_ollama(issues_text):
-    prompt = f"""Ты — опытный IT Project Manager. Проанализируй открытые задачи (Issues) репозитория {REPO} и составь краткий отчёт о рисках на русском языке.
+def analyze_with_ollama(sprint_1, sprint_2):
+    s1_block = "\n".join(sprint_1) if sprint_1 else "Нет задач"
+    s2_block = "\n".join(sprint_2) if sprint_2 else "Нет задач"
 
-Критерии оценки:
-1. Высокий риск: задачи старше 21 дня, критичные баги (bug) или задачи безопасности (SEC).
-2. Блокеры: задачи с меткой question или без движения.
-3. Рекомендации: конкретные действия для PM на эту неделю.
+    prompt = f"""Ты — опытный IT Project Manager. Проанализируй задачи репозитория {REPO} за два прошедших двухнедельных спринта (28 дней) и составь отчёт на русском языке.
 
-Список открытых задач:
-{issues_text}
+Спринт 1 (15–28 дней назад):
+{s1_block}
+
+Спринт 2 (последние 14 дней):
+{s2_block}
 
 Сформируй структурированный отчёт в формате Markdown:
-1. Сводка рисков
-2. Задачи с высоким риском и блокеры
-3. План действий PM"""
+1. Сводка по двум спринтам (сколько закрыто, сколько зависло)
+2. Рисковые задачи и блокеры (старше 21 дня, баги, вопросы, безопасность)
+3. План действий PM на следующий спринт"""
 
     payload = json.dumps({
         "model": OLLAMA_MODEL,
@@ -71,16 +80,14 @@ def analyze_with_ollama(issues_text):
 
 
 if __name__ == "__main__":
-    issues = fetch_open_issues()
-    if not issues:
-        print("Открытых задач не найдено.")
-        exit(0)
+    sprint_1, sprint_2 = fetch_two_sprints_issues()
+    print("=== ФАКТЫ ИЗ GITHUB API (2 СПРИНТА) ===")
+    print("Спринт 1 (15-28 дн.):")
+    print("\n".join(sprint_1) or "Нет задач")
+    print("\nСпринт 2 (0-14 дн.):")
+    print("\n".join(sprint_2) or "Нет задач")
 
-    issues_block = "\n".join(issues)
-    print("=== ДАННЫЕ ИЗ GITHUB API ===")
-    print(issues_block)
-
-    report = analyze_with_ollama(issues_block)
+    report = analyze_with_ollama(sprint_1, sprint_2)
     print("\n=== ОТЧЁТ OLLAMA ===")
     print(report)
 
